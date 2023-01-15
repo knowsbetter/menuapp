@@ -1,2 +1,2 @@
-# menuapp
+# Menu application
  Homework for Ylab course
