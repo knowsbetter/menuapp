@@ -4,7 +4,8 @@
 Запуск:
 <ul>
  <li>В файле database.py указываем данные для подключения к базе данных по следующей схеме (для PostgreSQL):<br>
-  <b>SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserverhost:port/dbname"</b></li>
+  <b>SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserverhost:port/dbname"</b>,<br>
+  где user, password - данные для подключения к базе данных, postgresserverhost:port - имя и порт сервера базы данных, dbname - название базы данных.</li>
  <li>В командной строке переходим в папку проекта, выполняем установку необходимых пакетов командой:<br>
   <b>$ pip install -r requirements.txt</b></li>
  <li>Запускаем проект из командной строки:<br>
