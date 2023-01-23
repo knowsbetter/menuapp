@@ -1,0 +1,34 @@
+version: '3.8'
+
+name: menu_app_test_image
+services:
+  my_web_app:
+    build:
+      dockerfile: test.Dockerfile
+    container_name: menuapp-web-test
+    volumes:
+      - .:/tests
+    depends_on:
+      db:
+        condition: service_healthy
+    command: pytest
+
+  db:
+    image: postgres:15.1-alpine
+    container_name: menuapp-db-test
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    expose:
+      - 5432
+    environment:
+      PGUSER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  postgres_data:

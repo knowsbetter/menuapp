@@ -1,9 +1,8 @@
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
-
-import crud, models, schemes
+from . import crud, models, schemes
 import uvicorn
-from database import SessionLocal, engine
+from .database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -21,7 +20,7 @@ def get_db():
 
 # Create menu
 @app.post("/api/v1/menus/", response_model=schemes.Menu, status_code=201)
-def create_menu(menu: schemes.MenuCreate, db: Session = Depends(get_db)):
+def create_menu(menu: schemes.MenuBase, db: Session = Depends(get_db)):
     db_menu = crud.get_menu_by_title(db=db, menu_title=menu.title)
     if db_menu:
         raise HTTPException(status_code=400, detail="menu already exists")
@@ -65,7 +64,7 @@ def delete_menu(menu_id: int, db: Session = Depends(get_db)):
 
 # Create submenu
 @app.post("/api/v1/menus/{menu_id}/submenus", response_model=schemes.Submenu, status_code=201)
-def create_submenu(menu_id: int, submenu: schemes.SubmenuCreate, db: Session = Depends(get_db)):
+def create_submenu(menu_id: int, submenu: schemes.SubmenuBase, db: Session = Depends(get_db)):
     db_submenu = crud.get_submenu_by_title(db=db, submenu_title=submenu.title)
     if db_submenu:
         raise HTTPException(status_code=400, detail="submenu already exists")
@@ -109,7 +108,7 @@ def delete_submenu(menu_id: int, submenu_id: int, db: Session = Depends(get_db))
 
 # Create dish
 @app.post("/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes", response_model=schemes.Dish, status_code=201)
-def create_dish(menu_id: int, submenu_id: int, dish: schemes.DishCreate, db: Session = Depends(get_db)):
+def create_dish(menu_id: int, submenu_id: int, dish: schemes.DishBase, db: Session = Depends(get_db)):
     db_dish = crud.get_dish_by_title(db=db, dish_title=dish.title)
     if db_dish:
         raise HTTPException(status_code=400, detail="dish already exists")
@@ -149,6 +148,3 @@ def delete_dish(menu_id: int, submenu_id: int, dish_id: int, db: Session = Depen
     if db_dish is None:
         raise HTTPException(status_code=404, detail="dish not found")
     return {"status": True, "message": "The dish has been deleted"}
-
-if __name__=='__main__':
-    uvicorn.run('main:app', reload=True)

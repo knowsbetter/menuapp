@@ -1,0 +1,38 @@
+version: '3.8'
+
+name: menu_app_image
+services:
+  my_web_app:
+    build:
+      dockerfile: Dockerfile
+    container_name: menuapp-web
+    volumes:
+      - .:/menuapp
+    ports:
+      - 8000:80
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn menuapp.main:app --host 0.0.0.0 --port 80
+
+  db:
+    image: postgres:15.1-alpine
+    container_name: menuapp-db
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    expose:
+      - 5432
+    ports:
+      - 9000:5432
+    environment:
+      PGUSER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  postgres_data:

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-import models, schemes
+from . import models, schemes
 
 '''_____________________________GET BY ID____________________________________________'''
 
@@ -36,16 +36,19 @@ def get_dishes(submenu_id: int, db: Session):
 
 '''______________________________CREATE______________________________________________'''
 
-def create_menu(db: Session, menu: schemes.MenuCreate):
+def create_menu(db: Session, menu: schemes.MenuBase):
     db_menu = models.Menu(**menu.dict())
+    db_menu.dishes_count = 0
+    db_menu.submenus_count = 0
     db.add(db_menu)
     db.commit()
     db.refresh(db_menu)
     return db_menu
 
-def create_submenu(db: Session, submenu: schemes.SubmenuCreate, menu_id: int):
+def create_submenu(db: Session, submenu: schemes.SubmenuBase, menu_id: int):
     db_submenu = models.Submenu(**submenu.dict())
     db_submenu.menu_id = menu_id
+    db_submenu.dishes_count = 0
     get_menu_by_id(db=db, menu_id=menu_id).submenus_count += 1
     db.add(db_submenu)
     db.commit()
