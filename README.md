@@ -10,8 +10,9 @@
   <b>$ pip install -r requirements.txt</b></li>
  <li>Запускаем проект из командной строки:<br>
   <b>$ python main.py</b><br>Запуск сервера выполняется с помощью Uvicorn и по умолчанию доступен на localhost "127.0.0.1:8000".</li>
+</ul>
   
- # Запуск в контейнере:
+# Запуск в контейнере:
 <ul>
  <li>В файле menuapp/database.py закомментировать строку для подключения к локальной базе:
   <b>SQLALCHEMY_DATABASE_URL = "postgresql://postgres:postgres@db:5432/postgres"</b> # Docker database<br>
@@ -20,4 +21,5 @@
   <b>$ docker-compose -f docker-compose.yml up -d</b></li>
  <li>Запускаем тест проекта в контейнере командой:<br>
   <b>$ docker-compose -f docker-compose-test.yml up -d</b></li>
+</ul>
 
