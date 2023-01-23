@@ -14,9 +14,6 @@
   
 # Запуск в контейнере:
 <ul>
- <li>В файле menuapp/database.py закомментировать строку для подключения к локальной базе:<br>
-  <b>SQLALCHEMY_DATABASE_URL = "postgresql://postgres:postgres@db:5432/postgres"</b> # Docker database<br>
-  <b>#SQLALCHEMY_DATABASE_URL = "postgresql://postgres:breakme@localhost:5432/my_menu"</b> # Local database</li>
  <li>Запускаем проект в контейнере командой:<br>
   <b>$ docker-compose -f docker-compose.yml up -d</b></li>
  <li>Запускаем тест проекта в контейнере командой:<br>
