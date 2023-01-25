@@ -22,7 +22,7 @@
   база данных - по схеме posrgres:postgres@localhost:9000/postgres.
  </li>
  <li>Запускаем тест проекта в контейнере командой:<br>
-  <b>$ docker-compose -f docker-compose-test.yml up -d</b>
+  <b>$ docker-compose -f docker-compose-test.yml up</b>
  </li>
 </ul>
 
