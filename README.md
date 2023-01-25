@@ -19,7 +19,7 @@
  <li>Запускаем проект в контейнере командой:<br>
   <b>$ docker-compose -f docker-compose.yml up -d</b><br>
   После запуска API будет доступен на localhost:8000/docs, 
-  база данных по схеме posrgres:postgres@localhost:9000/postgres.
+  база данных - по схеме posrgres:postgres@localhost:9000/postgres.
  </li>
  <li>Запускаем тест проекта в контейнере командой:<br>
   <b>$ docker-compose -f docker-compose-test.yml up -d</b>
