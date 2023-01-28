@@ -6,8 +6,8 @@ import redis
 def start():
     global redis_client
     redis_client = redis.Redis(
-        #  host='127.0.0.1',  # set port for your local machine
-        host='redis',
+        #  host='127.0.0.1',  # set host for your local machine
+        host='redis',  #  Docker-compose redis host
         port='6379',
         decode_responses=True,
     )
