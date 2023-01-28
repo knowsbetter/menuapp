@@ -43,6 +43,8 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
     expose:
       - 6379
+    command: redis-server
+    
 
 volumes:
   postgres_data:

@@ -4,7 +4,7 @@ import json
 def start():
     global redis_client
     redis_client = redis.Redis(
-        host='127.0.0.1',
+        host='redis',
         port='6379',
         decode_responses=True,
     )

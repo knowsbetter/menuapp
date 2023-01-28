@@ -30,5 +30,15 @@ services:
       timeout: 5s
       retries: 20
 
+  redis:
+    image: redis:latest
+    container_name: menuapp-cache-test
+    restart: always
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    expose:
+      - 6379
+    command: redis-server
+
 volumes:
   postgres_data:
