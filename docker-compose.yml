@@ -44,7 +44,7 @@ services:
     expose:
       - 6379
     command: redis-server
-    
+
 
 volumes:
   postgres_data:

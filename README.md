@@ -13,16 +13,15 @@
   <b>$ uvicorn menuapp.main:app</b><br>Проект по умолчанию доступен на localhost:8000/docs.
  </li>
 </ul>
-  
+
 # Запуск в контейнере:
 <ul>
  <li>Запускаем проект в контейнере командой:<br>
   <b>$ docker-compose -f docker-compose.yml up -d</b><br>
-  После запуска API будет доступен на localhost:8000/docs, 
+  После запуска API будет доступен на localhost:8000/docs,
   база данных - по схеме posrgres:postgres@localhost:9000/postgres.
  </li>
  <li>Запускаем тест проекта в контейнере командой:<br>
   <b>$ docker-compose -f docker-compose-test.yml up</b>
  </li>
 </ul>
-

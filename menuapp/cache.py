@@ -1,9 +1,12 @@
-import redis
 import json
+
+import redis
+
 
 def start():
     global redis_client
     redis_client = redis.Redis(
+        #  host='127.0.0.1',  # set port for your local machine
         host='redis',
         port='6379',
         decode_responses=True,
