@@ -5,6 +5,7 @@ services:
   my_web_app:
     build:
       dockerfile: Dockerfile
+    restart: always
     container_name: menuapp-web
     volumes:
       - .:/menuapp
@@ -33,6 +34,15 @@ services:
       interval: 1s
       timeout: 5s
       retries: 20
+
+  redis:
+    image: redis:latest
+    container_name: menuapp-cache
+    restart: always
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    expose:
+      - 6379
 
 volumes:
   postgres_data:

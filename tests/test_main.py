@@ -251,7 +251,7 @@ def test_delete_dish_item():
     assert response_data["status"] == True
     assert response_data["message"] == "The dish has been deleted"
 
-def test_nonexistant_dich_item():
+def test_nonexistant_dish_item():
     response = client.delete(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/0')
     assert response.status_code == status.HTTP_404_NOT_FOUND
     response_data = response.json()
