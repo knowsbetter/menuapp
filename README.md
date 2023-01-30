@@ -3,9 +3,13 @@
 
 # Запуск на локальном компьютере:
 <ul>
- <li>В файле menuapp/database.py указываем данные для подключения к базе данных на локальном компьютере по следующей схеме (для PostgreSQL):<br>
-  <b>SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserverhost:port/dbname"</b>,<br>
-  где user, password - данные для подключения к базе данных, postgresserverhost:port - имя и порт сервера базы данных, dbname - название базы данных.
+ <li>В корневом каталоге проекта создаём файл с именем .env и помещаем в него следующие переменные окружения:<br>
+  <b>SQLALCHEMY_DATABASE_URL=postgresql://user:password@postgresserverhost:port/dbname</b>,<br>
+  где user, password - данные для подключения к базе данных, postgresserverhost:port - имя и порт сервера базы данных, dbname - название базы данных.<br>
+  <b>REDIS_HOST=redis_host</b>,<br>
+  где redis_host - имя хоста Redis<br>
+  <b>REDIS_PORT=redis_port</b>,<br>
+  где redis_port - номер порта Redis
  </li>
  <li>В командной строке переходим в папку проекта, выполняем установку необходимых пакетов командой:<br>
   <b>$ pip install -r requirements.txt</b></li>
@@ -21,7 +25,7 @@
   После запуска API будет доступен на localhost:8000/docs,
   база данных - по схеме posrgres:postgres@localhost:9000/postgres.
  </li>
- <li>Запускаем тест проекта в контейнере командой:<br>
+ <li>Запускаем тесты проекта в контейнере командой:<br>
   <b>$ docker-compose -f docker-compose-test.yml up</b>
  </li>
 </ul>
