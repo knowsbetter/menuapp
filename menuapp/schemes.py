@@ -1,9 +1,8 @@
 from pydantic import BaseModel
 
-'''_____________________DISH SCHEMES______________________'''
 
-# Query input model
 class DishBase(BaseModel):
+    """Scheme for input data for dish item creation"""
     title: str
     description: str | None = None
     price: str | None = None
@@ -12,17 +11,13 @@ class DishBase(BaseModel):
         schema_extra = {
             'example': {
                 'title': 'dish title',
-                'descrition': 'dish description',
+                'description': 'dish description',
                 'price': '0.00',
             }
         }
 
-# Create input model
-class DishCreate(DishBase):
-    pass
-
-# Update input model
 class DishUpdate(BaseModel):
+    """Scheme for input data for dish item update"""
     title: str
     description: str | None = None
     price: str | None = None
@@ -31,13 +26,13 @@ class DishUpdate(BaseModel):
         schema_extra = {
             'example': {
                 'title': 'updated dish title',
-                'descrition': 'updated dish description',
+                'description': 'updated dish description',
                 'price': '0.00',
             }
         }
 
-# Output model
 class Dish(DishBase):
+    """Scheme for output dish information"""
     id: str
 
     class Config:
@@ -45,14 +40,14 @@ class Dish(DishBase):
         schema_extra = {
             'example': {
                 'title': 'dish title',
-                'descrition': 'dish description',
+                'description': 'dish description',
                 'price': 'dish price',
                 'id': 'dish id'
             }
         }
 
-# Delete output model
 class DishDelete(BaseModel):
+    """Scheme for dish removal response"""
     status: bool
     message: str
 
@@ -64,10 +59,9 @@ class DishDelete(BaseModel):
             }
         }
 
-'''_____________________SUBMENU SCHEMES______________________'''
 
-# Query input model
 class SubmenuBase(BaseModel):
+    """Scheme for input data for submenu item creation"""
     title: str
     description: str | None = None
 
@@ -75,16 +69,12 @@ class SubmenuBase(BaseModel):
         schema_extra = {
             'example': {
                 'title': 'submenu title',
-                'descrition': 'submenu description',
+                'description': 'submenu description',
             }
         }
 
-# Create input model
-class SubmenuCreate(SubmenuBase):
-    dishes_count: int = 0
-
-# Update input model
 class SubmenuUpdate(BaseModel):
+    """Scheme for input data for submenu item update"""
     title: str
     description: str | None = None
 
@@ -92,12 +82,12 @@ class SubmenuUpdate(BaseModel):
         schema_extra = {
             'example': {
                 'title': 'updated submenu title',
-                'descrition': 'updated submenu description',
+                'description': 'updated submenu description',
             }
         }
 
-# Output model
 class Submenu(SubmenuBase):
+    """Scheme for output submenu information"""
     id: str
     dishes_count: int
 
@@ -106,14 +96,14 @@ class Submenu(SubmenuBase):
         schema_extra = {
             'example': {
                 'title': 'submenu title',
-                'descrition': 'submenu description',
+                'description': 'submenu description',
                 'id': 'submenu id',
-                'dishes_count': 'number of dishes'
+                'dishes_count': 'number for dishes'
             }
         }
 
-# Delete output model
 class SubmenuDelete(BaseModel):
+    """Scheme for submenu removal response"""
     status: bool
     message: str
 
@@ -125,10 +115,9 @@ class SubmenuDelete(BaseModel):
             }
         }
 
-'''_____________________MENU SCHEMES______________________'''
 
-# Query input model
 class MenuBase(BaseModel):
+    """Scheme for input data for menu item creation"""
     title: str
     description: str | None = None
 
@@ -136,17 +125,12 @@ class MenuBase(BaseModel):
         schema_extra = {
             'example': {
                 'title': 'menu title',
-                'descrition': 'menu description',
+                'description': 'menu description',
             }
         }
 
-# Create input model
-class MenuCreate(MenuBase):
-    submenus_count: int = 0
-    dishes_count: int = 0
-
-# Update input model
 class MenuUpdate(BaseModel):
+    """Scheme for input data for menu item update"""
     title: str
     description: str | None = None
 
@@ -154,12 +138,12 @@ class MenuUpdate(BaseModel):
         schema_extra = {
             'example': {
                 'title': 'updated menu title',
-                'descrition': 'updated menu description',
+                'description': 'updated menu description',
             }
         }
 
-# Output model
 class Menu(MenuBase):
+    """Scheme for output menu information"""
     id: str
     submenus_count: int
     dishes_count: int
@@ -169,15 +153,15 @@ class Menu(MenuBase):
         schema_extra = {
             'example': {
                 'title': 'menu title',
-                'descrition': 'menu description',
+                'description': 'menu description',
                 'id': 'menu id',
-                'submenu_count': 'number of submenus',
-                'dishes_count': 'number of dishes'
+                'submenu_count': 'number for submenus',
+                'dishes_count': 'number for dishes'
             }
         }
 
-# Delete output model
 class MenuDelete(BaseModel):
+    """Scheme for submenu removal response"""
     status: bool
     message: str
 

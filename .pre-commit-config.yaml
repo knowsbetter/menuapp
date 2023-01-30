@@ -3,7 +3,6 @@ repos:
   rev: v3.2.0
   hooks:
   - id: trailing-whitespace
-  - id: end-of-file-fixer
   - id: check-yaml
   - id: check-added-large-files
   - id: check-case-conflict
@@ -28,4 +27,4 @@ repos:
   hooks:
   - id: flake8
     exclude: __init__.py
-    args: ["--ignore=E302,E305,E501"]
+    args: ["--ignore=E302,E305,E402,E501,W292"]

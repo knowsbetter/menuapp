@@ -11,6 +11,8 @@ services:
       - .:/menuapp
     ports:
       - 8000:80
+    env_file:
+      - .docker.env
     depends_on:
       db:
         condition: service_healthy

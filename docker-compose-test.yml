@@ -6,6 +6,8 @@ services:
     build:
       dockerfile: test.Dockerfile
     container_name: menuapp-web-test
+    env_file:
+      - .docker.env
     volumes:
       - .:/tests
     depends_on:
@@ -21,9 +23,8 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     expose:
       - 5432
-    environment:
-      PGUSER: postgres
-      POSTGRES_PASSWORD: postgres
+    env_file:
+      - .docker.env
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 1s
@@ -34,6 +35,8 @@ services:
     image: redis:latest
     container_name: menuapp-cache-test
     restart: always
+    env_file:
+      - .docker.env
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
     expose:
