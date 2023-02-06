@@ -1,29 +1,30 @@
 import json
 
-import redis
+import redis.asyncio as redis
 
 from . import config
 
+redis_client: redis.Redis = redis.Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, decode_responses=True)
 
-def start():
-    global redis_client
-    redis_client = redis.Redis(
-        host=config.REDIS_HOST,
-        port=config.REDIS_PORT,
-        decode_responses=True,
-    )
 
-def get_cache(url):
+async def stop():
+    await redis_client.flushall()
+    await redis_client.close()
+
+
+async def get_cache(url):
     """Returns cached value or None for given url"""
-    value = redis_client.get(url)
+    value = await redis_client.get(url)
     return json.loads(value) if value else value
 
-def set_cache(url, value):
-    """Sets cache value for given url"""
-    redis_client.set(url, json.dumps(value))
 
-def delete_cache(url):
+async def set_cache(url, value):
+    """Sets cache value for given url"""
+    await redis_client.set(url, json.dumps(value))
+
+
+async def delete_cache(url):
     """Deletes cache for given url"""
-    keys = redis_client.keys(f'{url}*')
+    keys = await redis_client.keys(f"{url}*")
     if keys:
-        redis_client.delete(*keys)
+        await redis_client.delete(*keys)

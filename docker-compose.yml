@@ -8,7 +8,7 @@ services:
     restart: always
     container_name: menuapp-web
     volumes:
-      - .:/menuapp
+      - shared_volume:/menuapp/output
     ports:
       - 8000:80
     env_file:
@@ -47,6 +47,28 @@ services:
       - 6379
     command: redis-server
 
+  celery:
+    build:
+      dockerfile: celery.Dockerfile
+    restart: always
+    container_name: menuapp-celery-web
+    volumes:
+      - shared_volume:/transport/output
+    expose:
+      - 5672
+    command: celery -A transport.main worker --loglevel=INFO --pool=solo
+
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: menuapp-rabbitmq
+    expose:
+      - 5672
+      - 15672
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+
 
 volumes:
   postgres_data:
+  shared_volume:
