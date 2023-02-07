@@ -21,11 +21,11 @@ async def get_db():
         yield db
 
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    await cache.stop()
-    async with engine.begin() as conn:
-        await conn.run_sync(models.Base.metadata.drop_all)
+# @app.on_event("shutdown")
+# async def shutdown_event():
+#     await cache.stop()
+#     async with engine.begin() as conn:
+#         await conn.run_sync(models.Base.metadata.drop_all)
 
 
 @app.post(

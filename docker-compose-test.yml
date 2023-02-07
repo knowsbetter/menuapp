@@ -9,10 +9,16 @@ services:
     env_file:
       - .docker.env
     volumes:
-      - .:/tests
+      - shared_volume:/tests/output
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      celery:
+        condition: service_started
     command: pytest
 
   db:
@@ -42,6 +48,42 @@ services:
     expose:
       - 6379
     command: redis-server
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+
+  celery:
+    build:
+      dockerfile: celery.Dockerfile
+    restart: always
+    container_name: menuapp-celery-web-test
+    volumes:
+      - shared_volume:/transport/output
+    expose:
+      - 5672
+    command: celery -A transport.main worker --loglevel=INFO --pool=solo
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: menuapp-rabbitmq-test
+    expose:
+      - 5672
+      - 15672
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
 
 volumes:
   postgres_data:
+  shared_volume:
