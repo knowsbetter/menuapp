@@ -10,7 +10,7 @@ random.seed(datetime.now().timestamp())
 
 client = TestClient(app=app)
 
-menu_id = 00
+menu_id = 0
 submenu_id = 0
 dish_id = 0
 
