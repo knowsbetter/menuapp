@@ -8,12 +8,6 @@ from .database import SessionLocal, engine
 app = FastAPI()
 
 
-@app.on_event("startup")
-async def startup_event():
-    async with engine.begin() as conn:
-        await conn.run_sync(models.Base.metadata.create_all)
-
-
 # Dependency
 async def get_db():
     """Returns database session"""
@@ -21,11 +15,10 @@ async def get_db():
         yield db
 
 
-# @app.on_event("shutdown")
-# async def shutdown_event():
-#     await cache.stop()
-#     async with engine.begin() as conn:
-#         await conn.run_sync(models.Base.metadata.drop_all)
+@app.on_event("startup")
+async def startup_event():
+    async with engine.begin() as conn:
+        await conn.run_sync(models.Base.metadata.create_all)
 
 
 @app.post(
@@ -33,6 +26,7 @@ async def get_db():
     response_model=schemes.Menu,
     summary="Создать меню",
     status_code=201,
+    tags=["Меню"],
 )
 async def create_menu(menu: schemes.MenuBase, db: AsyncSession = Depends(get_db)):
     """Create menu item"""
@@ -46,6 +40,7 @@ async def create_menu(menu: schemes.MenuBase, db: AsyncSession = Depends(get_db)
     path="/api/v1/menus/{menu_id}",
     summary="Обновить меню",
     response_model=schemes.Menu,
+    tags=["Меню"],
 )
 async def update_menu(menu_id: int, menu: schemes.MenuUpdate, db: AsyncSession = Depends(get_db)):
     """Update menu item"""
@@ -63,6 +58,7 @@ async def update_menu(menu_id: int, menu: schemes.MenuUpdate, db: AsyncSession =
     path="/api/v1/menus/",
     summary="Просмотреть список меню",
     response_model=list[schemes.Menu],
+    tags=["Меню"],
 )
 async def read_menus(db: AsyncSession = Depends(get_db)):
     """Read menus list"""
@@ -77,6 +73,7 @@ async def read_menus(db: AsyncSession = Depends(get_db)):
     path="/api/v1/menus/{menu_id}",
     summary="Просмотреть конкретное меню",
     response_model=schemes.Menu,
+    tags=["Меню"],
 )
 async def read_menu(menu_id: int, db: AsyncSession = Depends(get_db)):
     """Read menu item"""
@@ -96,6 +93,7 @@ async def read_menu(menu_id: int, db: AsyncSession = Depends(get_db)):
     summary="Удалить меню",
     response_model=schemes.MenuDelete,
     status_code=200,
+    tags=["Меню"],
 )
 async def delete_menu(menu_id: int, db: AsyncSession = Depends(get_db)):
     """Delete menu item"""
@@ -111,6 +109,7 @@ async def delete_menu(menu_id: int, db: AsyncSession = Depends(get_db)):
     summary="Создать подменю",
     response_model=schemes.Submenu,
     status_code=201,
+    tags=["Подменю"],
 )
 async def create_submenu(menu_id: int, submenu: schemes.SubmenuBase, db: AsyncSession = Depends(get_db)):
     """Create submenu item"""
@@ -125,6 +124,7 @@ async def create_submenu(menu_id: int, submenu: schemes.SubmenuBase, db: AsyncSe
     path="/api/v1/menus/{menu_id}/submenus/{submenu_id}",
     summary="Обновить подменю",
     response_model=schemes.Submenu,
+    tags=["Подменю"],
 )
 async def update_submenu(
     menu_id: int,
@@ -150,6 +150,7 @@ async def update_submenu(
     path="/api/v1/menus/{menu_id}/submenus",
     summary="Просмотреть список подменю",
     response_model=list[schemes.Submenu],
+    tags=["Подменю"],
 )
 async def read_submenus(menu_id: int, db: AsyncSession = Depends(get_db)):
     """Read submenus list"""
@@ -167,6 +168,7 @@ async def read_submenus(menu_id: int, db: AsyncSession = Depends(get_db)):
     path="/api/v1/menus/{menu_id}/submenus/{submenu_id}",
     summary="Просмотреть конкретное подменю",
     response_model=schemes.Submenu,
+    tags=["Подменю"],
 )
 async def read_submenu(menu_id: int, submenu_id: int, db: AsyncSession = Depends(get_db)):
     """Read submenu item"""
@@ -189,6 +191,7 @@ async def read_submenu(menu_id: int, submenu_id: int, db: AsyncSession = Depends
     summary="Удалить подменю",
     response_model=schemes.SubmenuDelete,
     status_code=200,
+    tags=["Подменю"],
 )
 async def delete_submenu(menu_id: int, submenu_id: int, db: AsyncSession = Depends(get_db)):
     """Delete submenu item"""
@@ -204,6 +207,7 @@ async def delete_submenu(menu_id: int, submenu_id: int, db: AsyncSession = Depen
     summary="Создать блюдо",
     response_model=schemes.Dish,
     status_code=201,
+    tags=["Блюда"],
 )
 async def create_dish(
     menu_id: int,
@@ -223,6 +227,7 @@ async def create_dish(
     path="/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}",
     summary="Обновить блюдо",
     response_model=schemes.Dish,
+    tags=["Блюда"],
 )
 async def update_dish(
     menu_id: int,
@@ -250,6 +255,7 @@ async def update_dish(
     path="/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes",
     summary="Просмотреть список блюд",
     response_model=list[schemes.Dish],
+    tags=["Блюда"],
 )
 async def read_dishes(menu_id: int, submenu_id: int, db: AsyncSession = Depends(get_db)):
     """Read dishes list"""
@@ -268,6 +274,7 @@ async def read_dishes(menu_id: int, submenu_id: int, db: AsyncSession = Depends(
     path="/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}",
     summary="Просмотреть конкретное блюдо",
     response_model=schemes.Dish,
+    tags=["Блюда"],
 )
 async def read_dish(menu_id: int, submenu_id: int, dish_id: int, db: AsyncSession = Depends(get_db)):
     """Read dish item"""
@@ -290,6 +297,7 @@ async def read_dish(menu_id: int, submenu_id: int, dish_id: int, db: AsyncSessio
     summary="Удалить блюдо",
     response_model=schemes.DishDelete,
     status_code=200,
+    tags=["Блюда"],
 )
 async def delete_dish(menu_id: int, submenu_id: int, dish_id: int, db: AsyncSession = Depends(get_db)):
     """Delete dish item"""
@@ -302,31 +310,42 @@ async def delete_dish(menu_id: int, submenu_id: int, dish_id: int, db: AsyncSess
 
 @app.post(
     path="/api/v1/fill/",
-    summary="Создать тестовое меню",
+    summary="1. Создание тестового меню",
     status_code=201,
+    tags=["Выгрузка тестового меню в excel-файл"],
 )
 async def create_test_menu(password: schemes.Password, db: AsyncSession = Depends(get_db)):
     """Create test menu"""
     if password.password == config.SPECIAL_PASSWORD:
+        async with engine.begin() as conn:
+            await conn.run_sync(models.Base.metadata.drop_all)
+            await conn.run_sync(models.Base.metadata.create_all)
         await crud.FillMenu.fill(db)
         return {"status": True, "message": "Success"}
     else:
         return {"status": False, "message": "Incorrect password"}
 
 
-@app.post(path="/api/v1/xl/create/", summary="Запрос на генерацию эксель файла", status_code=200)
-async def create_excel_file(password: schemes.Password, db: AsyncSession = Depends(get_db)):
+@app.post(
+    path="/api/v1/xl/create/",
+    summary="2. Запрос на генерацию эксель файла",
+    status_code=200,
+    tags=["Выгрузка тестового меню в excel-файл"],
+)
+async def create_excel_file(db: AsyncSession = Depends(get_db)):
     """Create test menu"""
-    if password.password == config.SPECIAL_PASSWORD:
-        res = await crud.CreateXL.create_xl(db)
-        return {"status": True, "message": f"{res}"}
-    else:
-        return {"status": False, "message": "Incorrect password"}
+    task_id = await crud.CreateXL.create_xl(db)
+    await cache.set_cache(f"celery{task_id}", task_id)
+    return {"task_id": task_id}
 
 
 @app.get(
     path="/api/v1/xl/get/",
-    summary="Скачать файл или получить статус",
+    summary="3. Получение ссылки на скачивание файла или уточнение статуса обработки",
+    tags=["Выгрузка тестового меню в excel-файл"],
 )
-async def download_xl():
-    return await crud.CreateXL.get_xl()
+async def download_xl(task_id: str):
+    if cache.get_cache(f"celery{task_id}"):
+        return await crud.CreateXL.get_xl(task_id)
+    else:
+        return {"status": False, "message": "Please request to generate excel file first"}

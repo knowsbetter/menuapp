@@ -60,6 +60,8 @@ services:
       dockerfile: celery.Dockerfile
     restart: always
     container_name: menuapp-celery-web-test
+    env_file:
+      - .docker.env
     volumes:
       - shared_volume:/transport/output
     expose:
@@ -75,12 +77,11 @@ services:
     expose:
       - 5672
       - 15672
-    volumes:
-      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
-      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    env_file:
+      - .docker.env
     healthcheck:
       test: rabbitmq-diagnostics -q ping
-      interval: 30s
+      interval: 10s
       timeout: 30s
       retries: 3
 

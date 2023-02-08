@@ -5,19 +5,19 @@ from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from transport.tasks import to_excel
+from transport.tasks import get_status, to_excel
 
 from . import models, schemes
 
 
 class MenuCRUD:
     @staticmethod
-    async def get_menu_by_id(db: AsyncSession, menu_id: int):
+    async def get_menu_by_id(menu_id: int, db: AsyncSession):
         """Get menu by id"""
         return (await db.execute(select(models.Menu).where(models.Menu.id == menu_id))).scalar()
 
     @staticmethod
-    async def get_menu_by_title(db: AsyncSession, menu_title: str):
+    async def get_menu_by_title(menu_title: str, db: AsyncSession):
         "Get menu by title"
         return (await db.execute(select(models.Menu).where(models.Menu.title == menu_title))).scalar()
 
@@ -27,7 +27,7 @@ class MenuCRUD:
         return (await db.execute(select(models.Menu))).scalars().all()
 
     @staticmethod
-    async def create_menu(db: AsyncSession, menu: schemes.MenuBase):
+    async def create_menu(menu: schemes.MenuBase, db: AsyncSession):
         """Create menu item"""
         db_menu = models.Menu(**menu.dict())
         db_menu.dishes_count = 0
@@ -37,9 +37,9 @@ class MenuCRUD:
         return db_menu
 
     @staticmethod
-    async def delete_menu(db: AsyncSession, menu_id: int):
+    async def delete_menu(menu_id: int, db: AsyncSession):
         """Delete menu item"""
-        db_menu = await MenuCRUD.get_menu_by_id(db, menu_id)
+        db_menu = await MenuCRUD.get_menu_by_id(db=db, menu_id=menu_id)
         if db_menu is None:
             return None
         else:
@@ -48,7 +48,7 @@ class MenuCRUD:
             return True
 
     @staticmethod
-    async def update_menu(db: AsyncSession, menu_id: int):
+    async def update_menu(menu_id: int, db: AsyncSession):
         """Update menu item"""
         await db.commit()
         return await MenuCRUD.get_menu_by_id(db=db, menu_id=menu_id)
@@ -56,12 +56,12 @@ class MenuCRUD:
 
 class SubmenuCRUD:
     @staticmethod
-    async def get_submenu_by_id(db: AsyncSession, submenu_id: int):
+    async def get_submenu_by_id(submenu_id: int, db: AsyncSession):
         """Get submenu by id"""
         return (await db.execute(select(models.Submenu).where(models.Submenu.id == submenu_id))).scalar()
 
     @staticmethod
-    async def get_submenu_by_title(db: AsyncSession, submenu_title: str):
+    async def get_submenu_by_title(submenu_title: str, db: AsyncSession):
         """Get submenu by title"""
         return (await db.execute(select(models.Submenu).where(models.Submenu.title == submenu_title))).scalar()
 
@@ -71,7 +71,7 @@ class SubmenuCRUD:
         return (await db.execute(select(models.Submenu).where(models.Submenu.menu_id == menu_id))).scalars().all()
 
     @staticmethod
-    async def create_submenu(db: AsyncSession, submenu: schemes.SubmenuBase, menu_id: int):
+    async def create_submenu(submenu: schemes.SubmenuBase, menu_id: int, db: AsyncSession):
         """Create submenu item"""
         db_submenu = models.Submenu(**submenu.dict())
         db_submenu.menu_id = menu_id
@@ -82,9 +82,9 @@ class SubmenuCRUD:
         return db_submenu
 
     @staticmethod
-    async def delete_submenu(db: AsyncSession, menu_id: int, submenu_id: int):
+    async def delete_submenu(menu_id: int, submenu_id: int, db: AsyncSession):
         """Delete submenu item"""
-        db_submenu = await SubmenuCRUD.get_submenu_by_id(db, submenu_id)
+        db_submenu = await SubmenuCRUD.get_submenu_by_id(db=db, submenu_id=submenu_id)
         if db_submenu is None:
             return None
         else:
@@ -96,7 +96,7 @@ class SubmenuCRUD:
             return True
 
     @staticmethod
-    async def update_submenu(db: AsyncSession, submenu_id: int):
+    async def update_submenu(submenu_id: int, db: AsyncSession):
         """Update submenu item"""
         await db.commit()
         return await SubmenuCRUD.get_submenu_by_id(db=db, submenu_id=submenu_id)
@@ -104,12 +104,12 @@ class SubmenuCRUD:
 
 class DishCRUD:
     @staticmethod
-    async def get_dish_by_id(db: AsyncSession, dish_id: int):
+    async def get_dish_by_id(dish_id: int, db: AsyncSession):
         """Get dish by id"""
         return (await db.execute(select(models.Dish).where(models.Dish.id == dish_id))).scalar()
 
     @staticmethod
-    async def get_dish_by_title(db: AsyncSession, dish_title: str):
+    async def get_dish_by_title(dish_title: str, db: AsyncSession):
         """Get dish by title"""
         return (await db.execute(select(models.Dish).where(models.Dish.title == dish_title))).scalar()
 
@@ -129,7 +129,7 @@ class DishCRUD:
         )
 
     @staticmethod
-    async def create_dish(db: AsyncSession, dish: schemes.DishBase, menu_id: int, submenu_id: int):
+    async def create_dish(dish: schemes.DishBase, menu_id: int, submenu_id: int, db: AsyncSession):
         """Create dish item"""
         db_dish = models.Dish(**dish.dict())
         db_dish.menu_id = menu_id
@@ -141,9 +141,9 @@ class DishCRUD:
         return db_dish
 
     @staticmethod
-    async def delete_dish(db: AsyncSession, dish_id: int, menu_id: int, submenu_id: int):
+    async def delete_dish(dish_id: int, menu_id: int, submenu_id: int, db: AsyncSession):
         """Delete dish item"""
-        db_dish = await DishCRUD.get_dish_by_id(db, dish_id)
+        db_dish = await DishCRUD.get_dish_by_id(db=db, dish_id=dish_id)
         if db_dish is None:
             return None
         else:
@@ -154,7 +154,7 @@ class DishCRUD:
             return True
 
     @staticmethod
-    async def update_dish(db: AsyncSession, dish_id: int):
+    async def update_dish(dish_id: int, db: AsyncSession):
         """Update dish item"""
         await db.commit()
         return await DishCRUD.get_dish_by_id(db=db, dish_id=dish_id)
@@ -185,8 +185,6 @@ class FillMenu:
 
 
 class CreateXL:
-    status = None
-
     @staticmethod
     async def create_xl(db: AsyncSession):
         """Gets database data and sends it to Celery to generate excel file"""
@@ -208,19 +206,18 @@ class CreateXL:
             )
         ).all()
         res = [tuple(row) for row in res]
-        CreateXL.status = to_excel.delay(res)
+        task = to_excel.delay(res)
+        return task.id
 
     @staticmethod
-    async def get_xl():
-        if CreateXL.status:
-            if CreateXL.status.status == "SUCCESS":
-                headers = {"Content-Disposition": "attachment; filename=test_menu.xlsx"}
-                return FileResponse(
-                    "output/test_menu.xlsx",
-                    media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    headers=headers,
-                )
-            else:
-                return {"status": f"{CreateXL.status.status}", "message": "Please wait"}
+    async def get_xl(task_id: str):
+        status = get_status(task_id)
+        if status == "SUCCESS":
+            headers = {"Content-Disposition": "attachment; filename=test_menu.xlsx"}
+            return FileResponse(
+                "output/test_menu.xlsx",
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers=headers,
+            )
         else:
-            return {"status": False, "message": "Please request to generate excel file first"}
+            return {"status": f"{status}", "message": "Please wait"}
