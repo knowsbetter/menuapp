@@ -1,18 +1,18 @@
 from fastapi import Depends, FastAPI, HTTPException
-from fastapi.encoders import jsonable_encoder
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from . import cache, config, crud, models, schemes
-from .database import SessionLocal, engine
+from services.cxl_service import CxlService
+from services.cxl_service import get_cxl_service as cs
+from services.dish_service import DishService
+from services.dish_service import get_dish_service as ds
+from services.menu_service import MenuService
+from services.menu_service import get_menu_service as ms
+from services.submenu_service import SubmenuService
+from services.submenu_service import get_submenu_service as ss
 
-app = FastAPI()
+from . import cache, crud, models, schemes
+from .database import engine
 
-
-# Dependency
-async def get_db():
-    """Returns database session"""
-    async with SessionLocal() as db:
-        yield db
+app = FastAPI(title="Приложение для меню")
 
 
 @app.on_event("startup")
@@ -28,12 +28,12 @@ async def startup_event():
     status_code=201,
     tags=["Меню"],
 )
-async def create_menu(menu: schemes.MenuBase, db: AsyncSession = Depends(get_db)):
+async def create_menu(menu: schemes.MenuBase, menu_service: MenuService = Depends(ms)):
     """Create menu item"""
-    db_menu = await crud.MenuCRUD.get_menu_by_title(db=db, menu_title=menu.title)
-    if db_menu:
+    res = await menu_service.create_menu(menu)
+    if not res:
         raise HTTPException(status_code=400, detail="menu already exists")
-    return await crud.MenuCRUD.create_menu(db=db, menu=menu)
+    return res
 
 
 @app.patch(
@@ -42,16 +42,12 @@ async def create_menu(menu: schemes.MenuBase, db: AsyncSession = Depends(get_db)
     response_model=schemes.Menu,
     tags=["Меню"],
 )
-async def update_menu(menu_id: int, menu: schemes.MenuUpdate, db: AsyncSession = Depends(get_db)):
+async def update_menu(menu_id: int, menu: schemes.MenuUpdate, menu_service: MenuService = Depends(ms)):
     """Update menu item"""
-    db_menu = await crud.MenuCRUD.get_menu_by_id(db=db, menu_id=menu_id)
-    if db_menu:
-        db_menu.title = menu.title
-        db_menu.description = menu.description
-        await cache.set_cache(f"/api/v1/menus/{menu_id}", jsonable_encoder(db_menu))
-        return await crud.MenuCRUD.update_menu(db=db, menu_id=menu_id)
-    else:
+    res = await menu_service.update_menu(menu_id, menu)
+    if not res:
         raise HTTPException(status_code=404, detail="menu not found")
+    return res
 
 
 @app.get(
@@ -60,13 +56,9 @@ async def update_menu(menu_id: int, menu: schemes.MenuUpdate, db: AsyncSession =
     response_model=list[schemes.Menu],
     tags=["Меню"],
 )
-async def read_menus(db: AsyncSession = Depends(get_db)):
+async def read_menus(menu_service: MenuService = Depends(ms)):
     """Read menus list"""
-    menus = await crud.MenuCRUD.get_menus(db=db)
-    if menus:
-        for menu in menus:
-            await cache.set_cache(f"/api/v1/menus/{menu.id}", jsonable_encoder(menu))
-    return menus
+    return await menu_service.read_menus()
 
 
 @app.get(
@@ -75,17 +67,12 @@ async def read_menus(db: AsyncSession = Depends(get_db)):
     response_model=schemes.Menu,
     tags=["Меню"],
 )
-async def read_menu(menu_id: int, db: AsyncSession = Depends(get_db)):
+async def read_menu(menu_id: int, menu_service: MenuService = Depends(ms)):
     """Read menu item"""
-    cached = await cache.get_cache(f"/api/v1/menus/{menu_id}")
-    if cached:
-        db_menu = cached
-    else:
-        db_menu = await crud.MenuCRUD.get_menu_by_id(db=db, menu_id=menu_id)
-    if db_menu is None:
+    res = await menu_service.read_menu(menu_id)
+    if not res:
         raise HTTPException(status_code=404, detail="menu not found")
-    await cache.set_cache(f"/api/v1/menus/{menu_id}", jsonable_encoder(db_menu))
-    return db_menu
+    return res
 
 
 @app.delete(
@@ -95,13 +82,12 @@ async def read_menu(menu_id: int, db: AsyncSession = Depends(get_db)):
     status_code=200,
     tags=["Меню"],
 )
-async def delete_menu(menu_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_menu(menu_id: int, menu_service: MenuService = Depends(ms)):
     """Delete menu item"""
-    db_menu = await crud.MenuCRUD.delete_menu(db=db, menu_id=menu_id)
-    if db_menu is None:
+    res = await menu_service.delete_menu(menu_id)
+    if not res:
         raise HTTPException(status_code=404, detail="menu not found")
-    await cache.delete_cache(f"/api/v1/menus/{menu_id}")
-    return {"status": True, "message": "The menu has been deleted"}
+    return res
 
 
 @app.post(
@@ -111,13 +97,12 @@ async def delete_menu(menu_id: int, db: AsyncSession = Depends(get_db)):
     status_code=201,
     tags=["Подменю"],
 )
-async def create_submenu(menu_id: int, submenu: schemes.SubmenuBase, db: AsyncSession = Depends(get_db)):
+async def create_submenu(menu_id: int, submenu: schemes.SubmenuBase, submenu_service: SubmenuService = Depends(ss)):
     """Create submenu item"""
-    db_submenu = await crud.SubmenuCRUD.get_submenu_by_title(db=db, submenu_title=submenu.title)
-    if db_submenu:
+    res = await submenu_service.create_submenu(menu_id, submenu)
+    if not res:
         raise HTTPException(status_code=400, detail="submenu already exists")
-    await cache.delete_cache(f"/api/v1/menus/{menu_id}")
-    return await crud.SubmenuCRUD.create_submenu(db=db, submenu=submenu, menu_id=menu_id)
+    return res
 
 
 @app.patch(
@@ -127,23 +112,13 @@ async def create_submenu(menu_id: int, submenu: schemes.SubmenuBase, db: AsyncSe
     tags=["Подменю"],
 )
 async def update_submenu(
-    menu_id: int,
-    submenu_id: int,
-    submenu: schemes.SubmenuUpdate,
-    db: AsyncSession = Depends(get_db),
+    menu_id: int, submenu_id: int, submenu: schemes.SubmenuUpdate, submenu_service: SubmenuService = Depends(ss)
 ):
     """Update submenu item"""
-    db_submenu = await crud.SubmenuCRUD.get_submenu_by_id(db=db, submenu_id=submenu_id)
-    if db_submenu:
-        db_submenu.title = submenu.title
-        db_submenu.description = submenu.description
-        await cache.set_cache(
-            f"/api/v1/menus/{menu_id}/submenus/{submenu_id}",
-            jsonable_encoder(db_submenu),
-        )
-        return await crud.SubmenuCRUD.update_submenu(db=db, submenu_id=submenu_id)
-    else:
+    res = await submenu_service.update_submenu(menu_id, submenu_id, submenu)
+    if not res:
         raise HTTPException(status_code=404, detail="submenu not found")
+    return res
 
 
 @app.get(
@@ -152,16 +127,9 @@ async def update_submenu(
     response_model=list[schemes.Submenu],
     tags=["Подменю"],
 )
-async def read_submenus(menu_id: int, db: AsyncSession = Depends(get_db)):
+async def read_submenus(menu_id: int, submenu_service: SubmenuService = Depends(ss)):
     """Read submenus list"""
-    submenus = await crud.SubmenuCRUD.get_submenus(db=db, menu_id=menu_id)
-    if submenus:
-        for submenu in submenus:
-            await cache.set_cache(
-                f"/api/v1/menus/{menu_id}/submenus/{submenu.id}",
-                jsonable_encoder(submenu),
-            )
-    return submenus
+    return await submenu_service.read_submenus(menu_id)
 
 
 @app.get(
@@ -170,20 +138,12 @@ async def read_submenus(menu_id: int, db: AsyncSession = Depends(get_db)):
     response_model=schemes.Submenu,
     tags=["Подменю"],
 )
-async def read_submenu(menu_id: int, submenu_id: int, db: AsyncSession = Depends(get_db)):
+async def read_submenu(menu_id: int, submenu_id: int, submenu_service: SubmenuService = Depends(ss)):
     """Read submenu item"""
-    cached = await cache.get_cache(f"/api/v1/menus/{menu_id}/submenus/{submenu_id}")
-    if cached:
-        db_submenu = cached
-    else:
-        db_submenu = await crud.SubmenuCRUD.get_submenu_by_id(db=db, submenu_id=submenu_id)
-    if db_submenu is None:
+    res = await submenu_service.read_submenu(menu_id, submenu_id)
+    if not res:
         raise HTTPException(status_code=404, detail="submenu not found")
-    await cache.set_cache(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}",
-        jsonable_encoder(db_submenu),
-    )
-    return db_submenu
+    return res
 
 
 @app.delete(
@@ -193,13 +153,12 @@ async def read_submenu(menu_id: int, submenu_id: int, db: AsyncSession = Depends
     status_code=200,
     tags=["Подменю"],
 )
-async def delete_submenu(menu_id: int, submenu_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_submenu(menu_id: int, submenu_id: int, submenu_service: SubmenuService = Depends(ss)):
     """Delete submenu item"""
-    db_submenu = await crud.SubmenuCRUD.delete_submenu(db=db, menu_id=menu_id, submenu_id=submenu_id)
-    if db_submenu is None:
+    res = await submenu_service.delete_submenu(menu_id, submenu_id)
+    if not res:
         raise HTTPException(status_code=404, detail="submenu not found")
-    await cache.delete_cache(f"/api/v1/menus/{menu_id}")
-    return {"status": True, "message": "The submenu has been deleted"}
+    return res
 
 
 @app.post(
@@ -213,14 +172,13 @@ async def create_dish(
     menu_id: int,
     submenu_id: int,
     dish: schemes.DishBase,
-    db: AsyncSession = Depends(get_db),
+    dish_service: DishService = Depends(ds),
 ):
     """Create dish item"""
-    db_dish = await crud.DishCRUD.get_dish_by_title(db=db, dish_title=dish.title)
-    if db_dish:
+    res = await dish_service.create_dish(menu_id, submenu_id, dish)
+    if not res:
         raise HTTPException(status_code=400, detail="dish already exists")
-    await cache.delete_cache(f"/api/v1/menus/{menu_id}")
-    return await crud.DishCRUD.create_dish(db=db, dish=dish, menu_id=menu_id, submenu_id=submenu_id)
+    return res
 
 
 @app.patch(
@@ -234,21 +192,13 @@ async def update_dish(
     submenu_id: int,
     dish_id: int,
     dish: schemes.DishUpdate,
-    db: AsyncSession = Depends(get_db),
+    dish_service: DishService = Depends(ds),
 ):
     """Update dish item"""
-    db_dish = await crud.DishCRUD.get_dish_by_id(db=db, dish_id=dish_id)
-    if db_dish:
-        db_dish.title = dish.title
-        db_dish.description = dish.description
-        db_dish.price = dish.price
-        await cache.set_cache(
-            f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}",
-            jsonable_encoder(db_dish),
-        )
-        return await crud.DishCRUD.update_dish(db=db, dish_id=dish_id)
-    else:
+    res = await dish_service.update_dish(menu_id, submenu_id, dish_id, dish)
+    if not res:
         raise HTTPException(status_code=404, detail="dish not found")
+    return res
 
 
 @app.get(
@@ -257,17 +207,13 @@ async def update_dish(
     response_model=list[schemes.Dish],
     tags=["Блюда"],
 )
-async def read_dishes(menu_id: int, submenu_id: int, db: AsyncSession = Depends(get_db)):
+async def read_dishes(
+    menu_id: int,
+    submenu_id: int,
+    dish_service: DishService = Depends(ds),
+):
     """Read dishes list"""
-    dishes = await crud.DishCRUD.get_dishes(db=db, menu_id=menu_id, submenu_id=submenu_id)
-    if dishes:
-        for dish in dishes:
-            await cache.set_cache(
-                f"/api/v1/menus/{menu_id}/submenus/\
-                    {submenu_id}/dishes/{dish.id}",
-                jsonable_encoder(dish),
-            )
-    return dishes
+    return await dish_service.read_dishes(menu_id, submenu_id)
 
 
 @app.get(
@@ -276,20 +222,17 @@ async def read_dishes(menu_id: int, submenu_id: int, db: AsyncSession = Depends(
     response_model=schemes.Dish,
     tags=["Блюда"],
 )
-async def read_dish(menu_id: int, submenu_id: int, dish_id: int, db: AsyncSession = Depends(get_db)):
+async def read_dish(
+    menu_id: int,
+    submenu_id: int,
+    dish_id: int,
+    dish_service: DishService = Depends(ds),
+):
     """Read dish item"""
-    cached = await cache.get_cache(f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}")
-    if cached:
-        db_dish = cached
-    else:
-        db_dish = await crud.DishCRUD.get_dish_by_id(db=db, dish_id=dish_id)
-    if db_dish is None:
+    res = await dish_service.read_dish(menu_id, submenu_id, dish_id)
+    if not res:
         raise HTTPException(status_code=404, detail="dish not found")
-    await cache.set_cache(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}",
-        jsonable_encoder(db_dish),
-    )
-    return db_dish
+    return res
 
 
 @app.delete(
@@ -299,13 +242,17 @@ async def read_dish(menu_id: int, submenu_id: int, dish_id: int, db: AsyncSessio
     status_code=200,
     tags=["Блюда"],
 )
-async def delete_dish(menu_id: int, submenu_id: int, dish_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_dish(
+    menu_id: int,
+    submenu_id: int,
+    dish_id: int,
+    dish_service: DishService = Depends(ds),
+):
     """Delete dish item"""
-    db_dish = await crud.DishCRUD.delete_dish(db=db, dish_id=dish_id, menu_id=menu_id, submenu_id=submenu_id)
-    if db_dish is None:
+    res = await dish_service.delete_dish(menu_id, submenu_id, dish_id)
+    if not res:
         raise HTTPException(status_code=404, detail="dish not found")
-    await cache.delete_cache(f"/api/v1/menus/{menu_id}")
-    return {"status": True, "message": "The dish has been deleted"}
+    return res
 
 
 @app.post(
@@ -314,16 +261,12 @@ async def delete_dish(menu_id: int, submenu_id: int, dish_id: int, db: AsyncSess
     status_code=201,
     tags=["Выгрузка тестового меню в excel-файл"],
 )
-async def create_test_menu(password: schemes.Password, db: AsyncSession = Depends(get_db)):
+async def create_test_menu(password: schemes.Password, cxl_service: CxlService = Depends(cs)):
     """Create test menu"""
-    if password.password == config.SPECIAL_PASSWORD:
-        async with engine.begin() as conn:
-            await conn.run_sync(models.Base.metadata.drop_all)
-            await conn.run_sync(models.Base.metadata.create_all)
-        await crud.FillMenu.fill(db)
-        return {"status": True, "message": "Success"}
-    else:
+    res = await cxl_service.create_test_menu(password)
+    if not res:
         return {"status": False, "message": "Incorrect password"}
+    return res
 
 
 @app.post(
@@ -332,11 +275,9 @@ async def create_test_menu(password: schemes.Password, db: AsyncSession = Depend
     status_code=200,
     tags=["Выгрузка тестового меню в excel-файл"],
 )
-async def create_excel_file(db: AsyncSession = Depends(get_db)):
+async def create_excel_file(cxl_service: CxlService = Depends(cs)):
     """Create test menu"""
-    task_id = await crud.CreateXL.create_xl(db)
-    await cache.set_cache(f"celery{task_id}", task_id)
-    return {"task_id": task_id}
+    return await cxl_service.create_excel_file()
 
 
 @app.get(

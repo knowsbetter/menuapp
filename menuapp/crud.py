@@ -8,6 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from transport.tasks import get_status, to_excel
 
 from . import models, schemes
+from .database import SessionLocal
+
+
+async def get_db():
+    """Returns database session"""
+    async with SessionLocal() as db:
+        yield db
 
 
 class MenuCRUD:
