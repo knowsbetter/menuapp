@@ -10,6 +10,12 @@
   где <b>redis_host</b> - имя хоста Redis<br>
   <b>REDIS_PORT=redis_port</b>,<br>
   где <b>redis_port</b> - номер порта Redis
+  <b>SPECIAL_PASSWORD=password</b>,<br>
+  где <b>password</b> - пароль для создания тестового меню
+  <b>RABBIT_BROKER=rabbit_broker</b>,<br>
+  где <b>rabbit_broker</b> - адрес брокера для Celery
+  <b>RABBIT_BACKEND=rabbit_backend</b>,<br>
+  где <b>rabbit_backend</b> - адрес бекэнда для Celery
  </li>
  <li>В командной строке переходим в папку проекта, выполняем установку необходимых пакетов командой:<br>
   <b>$ pip install -r requirements.txt</b></li>
